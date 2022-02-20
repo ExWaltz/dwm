@@ -2,6 +2,9 @@
 
 /* appearance */
 static const unsigned int borderpx  = 1;        /* border pixel of windows */
+static const unsigned int igappx    = 5;        /* size of inner gaps */
+static const unsigned int ogappx    = 5;        /* size of outer gaps */
+static const int gapsforone	    = 0;	/* 1 enable gaps when only one window is open */
 static const unsigned int snap      = 32;       /* snap pixel */
 static const unsigned int systraypinning = 0;   /* 0: sloppy systray follows selected monitor, >0: pin systray to monitor X */
 static const unsigned int systrayspacing = 2;   /* systray spacing */
@@ -13,11 +16,11 @@ static const char *fonts[]          = { "noto sans mono:size=10", "noto sans mon
 static const char dmenufont[]       = "noto sans mono:size=10";
 
 static char normbgcolor[]           = "#222222";
-static char normbordercolor[]       = "#444444";
-static char normfgcolor[]           = "#bbbbbb";
-static char selfgcolor[]            = "#eeeeee";
-static char selbordercolor[]        = "#005577";
-static char selbgcolor[]            = "#005577";
+static char normbordercolor[]       = "#2b2b05";
+static char normfgcolor[]           = "#c4bfbc";
+static char selfgcolor[]            = "#f3de90";
+static char selbordercolor[]        = "#7ba02e";
+static char selbgcolor[]            = "#7ba02e";
 static char *colors[][3] = {
        /*               fg           bg           border   */
        [SchemeNorm] = { normfgcolor, normbgcolor, normbordercolor },
@@ -34,6 +37,7 @@ static const Rule rules[] = {
 	 */
 	/* class      instance    title       tags mask     isfloating   monitor */
 	{ "Firefox",  NULL,       NULL,       1 << 8,       0,           -1 },
+    { "kanjitomo-reader-Launcher",  NULL,       "win0",       0,       1,           -1 },
 };
 
 /* layout(s) */
@@ -76,9 +80,6 @@ static const char *termcmd[]  = { "st", NULL };
 static Key keys[] = {
 	/* modifier                     key        function        argument */
 	{ MODKEY,                       XK_F5,     xrdb,           {.v = NULL } },
-	{ MODKEY|ShiftMask,             XK_h,      setcfact,       {.f = +0.25} },
-	{ MODKEY|ShiftMask,             XK_l,      setcfact,       {.f = -0.25} },
-	{ MODKEY|ShiftMask,             XK_o,      setcfact,       {.f =  0.00} },
 	{ MODKEY,                       XK_r,      spawn,          {.v = dmenucmd } },
 	{ MODKEY,                       XK_Return, spawn,          {.v = termcmd } },
 	{ MODKEY,                       XK_b,      togglebar,      {0} },
@@ -89,6 +90,12 @@ static Key keys[] = {
 	{ MODKEY|ShiftMask,             XK_Return, zoom,           {0} },
 	{ MODKEY,                       XK_Tab,    view,           {0} },
 	{ MODKEY|ShiftMask,             XK_q,      killclient,     {0} },
+	{ MODKEY|ShiftMask,             XK_i,      setigaps,       {.i = +2 } },
+	{ MODKEY|ControlMask,           XK_i,      setigaps,       {.i = -2 } },
+	{ MODKEY|ShiftMask|ControlMask, XK_i,      setigaps,       {.i = 0  } },
+	{ MODKEY|ShiftMask,             XK_o,      setogaps,       {.i = +2 } },
+	{ MODKEY|ControlMask,           XK_o,      setogaps,       {.i = -2 } },
+	{ MODKEY|ShiftMask|ControlMask, XK_o,      setogaps,       {.i = 0  } },
 	{ MODKEY|ControlMask,           XK_j,      moveresize,     {.v = "0x 25y 0w 0h" } },
 	{ MODKEY|ControlMask,           XK_k,      moveresize,     {.v = "0x -25y 0w 0h" } },
 	{ MODKEY|ControlMask,           XK_l,      moveresize,     {.v = "25x 0y 0w 0h" } },
