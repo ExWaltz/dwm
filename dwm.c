@@ -134,7 +134,6 @@ typedef struct Client Client;
 struct Client {
 	char name[256];
 	float mina, maxa;
-	float cfact;
 	int x, y, w, h;
 	int oldx, oldy, oldw, oldh;
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh;
@@ -167,6 +166,7 @@ struct Monitor {
 	int by;               /* bar geometry */
 	int mx, my, mw, mh;   /* screen size */
 	int wx, wy, ww, wh;   /* window area  */
+	int igappx, ogappx;   /* inner and outer gaps */
 	unsigned int seltags;
 	unsigned int sellt;
 	unsigned int tagset[2];
@@ -266,8 +266,9 @@ static void setdirs(const Arg *arg);
 static void setfacts(const Arg *arg);
 static void setfocus(Client *c);
 static void setfullscreen(Client *c, int fullscreen);
+static void setigaps(const Arg *arg);
+static void setogaps(const Arg *arg);
 static void setlayout(const Arg *arg);
-static void setcfact(const Arg *arg);
 static void setup(void);
 static void seturgent(Client *c, int urg);
 static void showhide(Client *c);
@@ -792,6 +793,8 @@ createmon(void)
 	m->nmaster = nmaster;
 	m->showbar = showbar;
 	m->topbar = topbar;
+	m->igappx = igappx;
+	m->ogappx = ogappx;
 	m->lt[0] = &layouts[0];
 	m->lt[1] = &layouts[1 % LENGTH(layouts)];
 	strncpy(m->ltsymbol, layouts[0].symbol, sizeof m->ltsymbol);
@@ -1263,7 +1266,6 @@ manage(Window w, XWindowAttributes *wa)
 	c->w = c->oldw = wa->width;
 	c->h = c->oldh = wa->height;
 	c->oldbw = wa->border_width;
-	c->cfact = 1.0;
 
 	updatetitle(c);
 	if (XGetTransientForHint(dpy, w, &trans) && (t = wintoclient(trans))) {
@@ -1911,6 +1913,26 @@ setfullscreen(Client *c, int fullscreen)
 }
 
 void
+setigaps(const Arg *arg)
+{
+	if ((arg->i == 0) || (selmon->igappx + arg->i < 0))
+		selmon->igappx = 0;
+	else
+		selmon->igappx += arg->i;
+	arrange(selmon);
+}
+
+void
+setogaps(const Arg *arg)
+{
+	if ((arg->i == 0) || (selmon->ogappx + arg->i < 0))
+		selmon->ogappx = 0;
+	else
+		selmon->ogappx += arg->i;
+	arrange(selmon);
+}
+
+void
 setlayout(const Arg *arg)
 {
 	if (!arg || !arg->v || arg->v != selmon->lt[selmon->sellt])
@@ -1922,23 +1944,6 @@ setlayout(const Arg *arg)
 		arrange(selmon);
 	else
 		drawbar(selmon);
-}
-
-void setcfact(const Arg *arg) {
-	float f;
-	Client *c;
-
-	c = selmon->sel;
-
-	if(!arg || !c || !selmon->lt[selmon->sellt]->arrange)
-		return;
-	f = arg->f + c->cfact;
-	if(arg->f == 0.0)
-		f = 1.0;
-	else if(f < 0.25 || f > 4.0)
-		return;
-	c->cfact = f;
-	arrange(selmon);
 }
 
 void
@@ -2097,11 +2102,10 @@ tagmon(const Arg *arg)
 void
 tile(Monitor *m)
 {
-	float mfacts = 0, sfacts = 0;
 	Client *c;
 
 	Area *ga = m->pertag->areas[m->pertag->curtag], *ma = ga + 1, *sa = ga + 2, *a;
-	unsigned int n, i, w, h, ms, ss;
+	unsigned int n, i, w, h, g, ms, ss;
 	float f;
  
 	/* print layout symbols */
@@ -2111,12 +2115,7 @@ tile(Monitor *m)
 		(char[]){ '-', '|' }[sa->dir]);
 
 	/* calculate number of clients */
-	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++) {
-		if (n < m->nmaster)
-			mfacts += c->cfact;
-		else
-			sfacts += c->cfact;
-	}
+	for (n = 0, c = nexttiled(m->clients); c; c = nexttiled(c->next), n++);
 	if (n == 0)
 		return;
 
