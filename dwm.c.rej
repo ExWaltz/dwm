@@ -1,0 +1,16 @@
+--- dwm.c	2022-02-16 00:26:13.970812142 +0530
++++ dwm.c	2022-02-16 00:40:50.847058491 +0530
+@@ -57,6 +58,13 @@
+ #define HEIGHT(X)               ((X)->h + 2 * (X)->bw)
+ #define TAGMASK                 ((1 << LENGTH(tags)) - 1)
+ #define TEXTW(X)                (drw_fontset_getwidth(drw, (X)) + lrpad)
++#define TTEXTW(X)               (drw_fontset_getwidth(drw, (X)))
++
++#define STATUSLENGTH            256
++#define DWMBLOCKSLOCKFILE       "/var/local/dwmblocks/dwmblocks.pid"
++#define DELIMITERENDCHAR        10
++#define LSPAD                   (lrpad / 2) /* padding on left side of status text */
++#define RSPAD                   (lrpad / 2) /* padding on right side of status text */
+ 
+ #define SYSTEM_TRAY_REQUEST_DOCK    0
+ /* XEMBED messages */
